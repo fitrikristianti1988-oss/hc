@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Cuti Pegawai — Human Capital</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page-plane:     #f4f5f8;
+    --card-border:    rgba(11,11,11,0.08);
+    --text-primary:   #14161f;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+
+    --navy:           #1e2761;
+    --navy-ink:       #161c4a;
+    --ice:            #dbe6fb;
+
+    --good:           #0ca30c;
+    --good-bg:        #e5f6e5;
+    --critical:       #d03b3b;
+    --critical-bg:    #fbe9e9;
+
+    --series-1: #2a78d6;
+    --series-4: #eda100;
+    --series-7: #4a3aa7;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--page-plane);
+    color: var(--text-primary);
+    font-family: -apple-system, "Segoe UI", Calibri, Arial, sans-serif;
+  }
+
+  .wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 32px 28px 64px 28px;
+  }
+
+  /* ---------- Header ---------- */
+  header.dash-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .dash-head .eyebrow {
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .dash-head h1 {
+    font-size: 30px;
+    font-weight: 800;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.01em;
+  }
+  .dash-head p.sub {
+    margin: 0;
+    font-size: 14.5px;
+    color: var(--text-secondary);
+    max-width: 640px;
+  }
+  .head-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--navy);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .head-badge .n { font-size: 20px; font-weight: 800; }
+
+  /* ---------- KPI tiles ---------- */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 22px;
+  }
+  .kpi-tile {
+    background: var(--surface-1);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .kpi-tile .kpi-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .kpi-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .kpi-icon svg { width: 20px; height: 20px; }
+  .kpi-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+  .kpi-value {
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .kpi-meta {
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .kpi-tile.tile-total .kpi-icon { background: var(--ice); color: var(--navy); }
+  .kpi-tile.tile-total .kpi-value { color: var(--navy); }
+  .kpi-tile.tile-good { background: var(--good-bg); border-color: rgba(12,163,12,0.18); }
+  .kpi-tile.tile-good .kpi-icon { background: rgba(12,163,12,0.16); color: var(--good); }
+  .kpi-tile.tile-good .kpi-value { color: var(--good); }
+  .kpi-tile.tile-critical { background: var(--critical-bg); border-color: rgba(208,59,59,0.18); }
+  .kpi-tile.tile-critical .kpi-icon { background: rgba(208,59,59,0.16); color: var(--critical); }
+  .kpi-tile.tile-critical .kpi-value { color: var(--critical); }
+
+  /* progress bar inside tile */
+  .kpi-bar-track {
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(11,11,11,0.08);
+    overflow: hidden;
+    margin-top: 2px;
+  }
+  .kpi-bar-fill { height: 100%; border-radius: 3px; }
+
+  /* ---------- Panels ---------- */
+  .panel {
+    background: var(--surface-1);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+  }
+  .panel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .panel-head h2 {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0;
+  }
+  .panel-head .panel-sub {
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .view-toggle {
+    border: 1px solid var(--card-border);
+    background: var(--page-plane);
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 7px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .view-toggle:hover { background: #eceef2; }
+
+  /* ---------- Realisasi (donut + proportion bar) ---------- */
+  .realisasi-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 32px;
+    align-items: center;
+  }
+  .donut-wrap { position: relative; display: flex; justify-content: center; }
+  .donut-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+  }
+  .donut-center .dc-value { font-size: 30px; font-weight: 800; color: var(--good); }
+  .donut-center .dc-label { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+  .legend-row {
+    display: flex;
+    gap: 22px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); }
+  .legend-swatch { width: 11px; height: 11px; border-radius: 3px; }
+
+  .prop-bar-block { margin-bottom: 22px; }
+  .prop-bar-label-row {
+    display: flex; justify-content: space-between;
+    font-size: 12.5px; color: var(--text-muted); margin-bottom: 6px;
+  }
+  .prop-bar-track {
+    height: 22px;
+    border-radius: 11px;
+    background: var(--gridline);
+    display: flex;
+    overflow: hidden;
+  }
+  .prop-seg {
+    height: 100%;
+    display: flex; align-items: center;
+    font-size: 11.5px; font-weight: 700; color: #fff;
+    padding-left: 10px;
+  }
+
+  .quick-facts { display: flex; flex-direction: column; gap: 14px; }
+  .fact-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+  }
+  .fact-row b { color: var(--text-primary); }
+  .fact-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  table.data-table th, table.data-table td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--gridline);
+  }
+  table.data-table th {
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  table.data-table td.num { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .hidden { display: none !important; }
+
+  /* ---------- Ketentuan cuti list ---------- */
+  .rule-list { display: flex; flex-direction: column; }
+  .rule-row {
+    display: flex; gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--gridline);
+  }
+  .rule-row:last-child { border-bottom: none; }
+  .rule-icon {
+    width: 42px; height: 42px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .rule-icon svg { width: 21px; height: 21px; }
+  .rule-title { font-size: 14.5px; font-weight: 700; margin-bottom: 3px; }
+  .rule-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .rule-title-col { flex: 0 0 230px; display: flex; align-items: center; }
+  .rule-body { flex: 1; display: flex; align-items: center; }
+
+  /* ---------- Card grids (risiko / rencana) ---------- */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .info-card {
+    background: var(--page-plane);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .info-card .ic-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+  }
+  .info-card .ic-icon svg { width: 19px; height: 19px; }
+  .info-card h3 { font-size: 14.5px; font-weight: 700; margin: 0 0 6px 0; }
+  .info-card p { font-size: 12.8px; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+
+  .timeline-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .tl-card { text-align: left; position: relative; }
+  .tl-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--navy); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+    margin-bottom: 12px;
+  }
+  .tl-card h3 { font-size: 14px; font-weight: 700; margin: 0 0 5px 0; }
+  .tl-card p { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
+
+  .callout {
+    margin-top: 20px;
+    background: var(--ice);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--navy-ink);
+    font-style: italic;
+  }
+
+  footer.dash-foot {
+    margin-top: 8px;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* Tooltip */
+  #tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: #14161f;
+    color: #fff;
+    font-size: 12.5px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    line-height: 1.4;
+    opacity: 0;
+    transform: translate(-50%, -110%);
+    transition: opacity 0.1s ease;
+    z-index: 50;
+    white-space: nowrap;
+  }
+  #tooltip b { font-size: 13px; }
+
+  @media (max-width: 860px) {
+    .kpi-row { grid-template-columns: 1fr; }
+    .realisasi-grid { grid-template-columns: 1fr; }
+    .card-grid { grid-template-columns: 1fr; }
+    .timeline-row { grid-template-columns: 1fr 1fr; }
+    .rule-row { flex-direction: column; gap: 6px; }
+    .rule-title-col { flex: none; }
+  }
+</style>
+</head>
+<body>
+<div id="tooltip"></div>
+
+<div class="wrap">
+
+  <header class="dash-head">
+    <div>
+      <div class="eyebrow">Human Capital Strategis</div>
+      <h1>Dashboard Cuti Pegawai</h1>
+      <p class="sub">Ketentuan &amp; realisasi cuti tahunan (block leave) — posisi Agustus 2026. Angka realisasi merupakan <b>data asumsi</b> untuk keperluan simulasi pelaporan.</p>
+    </div>
+    <div class="head-badge">
+      <span class="n">27.000</span>
+      <span>pegawai<br>seluruh unit kerja</span>
+    </div>
+  </header>
+
+  <!-- KPI TILES -->
+  <section class="kpi-row">
+    <div class="kpi-tile tile-total">
+      <div class="kpi-top">
+        <div class="kpi-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="kpi-label">Total Pegawai</div>
+      </div>
+      <div class="kpi-value">27.000</div>
+      <div class="kpi-meta">Basis perhitungan realisasi block leave</div>
+    </div>
+
+    <div class="kpi-tile tile-good">
+      <div class="kpi-top">
+        <div class="kpi-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="kpi-label">Sudah Melaksanakan Block Leave</div>
+      </div>
+      <div class="kpi-value">17.000</div>
+      <div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:63%; background: var(--good);"></div></div>
+      <div class="kpi-meta">63% dari total pegawai</div>
+    </div>
+
+    <div class="kpi-tile tile-critical">
+      <div class="kpi-top">
+        <div class="kpi-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="kpi-label">Belum Melaksanakan Block Leave</div>
+      </div>
+      <div class="kpi-value">10.000</div>
+      <div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:37%; background: var(--critical);"></div></div>
+      <div class="kpi-meta">37% dari total pegawai — perlu pemantauan aktif</div>
+    </div>
+  </section>
+
+  <!-- REALISASI PANEL -->
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Realisasi Block Leave</h2>
+        <div class="panel-sub">Komposisi 27.000 pegawai berdasarkan status pelaksanaan cuti besar (block leave)</div>
+      </div>
+      <button class="view-toggle" id="toggleRealisasi" onclick="toggleView('realisasi')">Lihat sebagai tabel</button>
+    </div>
+
+    <div id="realisasi-chart" class="realisasi-grid">
+      <div class="donut-wrap">
+        <svg width="260" height="260" viewBox="0 0 200 200" role="img" aria-label="Donut chart komposisi realisasi block leave">
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#e1e0d9" stroke-width="28"></circle>
+          <!-- Sudah: 63% -->
+          <circle id="arcGood" class="donut-arc" cx="100" cy="100" r="80" fill="none" stroke="#0ca30c" stroke-width="28"
+            stroke-dasharray="316.858 502.655" stroke-dashoffset="0" transform="rotate(-90 100 100)"
+            stroke-linecap="butt"></circle>
+          <!-- Belum: 37%, offset after good segment + 2px gap each side -->
+          <circle id="arcCritical" class="donut-arc" cx="100" cy="100" r="80" fill="none" stroke="#d03b3b" stroke-width="28"
+            stroke-dasharray="185.797 502.655" stroke-dashoffset="-318.858" transform="rotate(-90 100 100)"
+            stroke-linecap="butt"></circle>
+        </svg>
+        <div class="donut-center">
+          <div class="dc-value">63%</div>
+          <div class="dc-label">sudah block leave</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="prop-bar-block">
+          <div class="prop-bar-label-row">
+            <span>Proporsi realisasi (27.000 pegawai)</span>
+            <span>100%</span>
+          </div>
+          <div class="prop-bar-track">
+            <div class="prop-seg" data-tip="Sudah Melaksanakan: 17.000 pegawai (63%)" style="width:63%; background:#0ca30c;">63%</div>
+            <div class="prop-seg" data-tip="Belum Melaksanakan: 10.000 pegawai (37%)" style="width:37%; background:#d03b3b;">37%</div>
+          </div>
+        </div>
+
+        <div class="quick-facts">
+          <div class="fact-row"><span class="fact-dot" style="background:#0ca30c;"></span><b>17.000 pegawai (63%)</b>&nbsp;telah menyelesaikan kewajiban block leave sesuai ketentuan.</div>
+          <div class="fact-row"><span class="fact-dot" style="background:#d03b3b;"></span><b>10.000 pegawai (37%)</b>&nbsp;belum melaksanakan block leave dan memerlukan tindak lanjut sebelum akhir tahun.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="realisasi-table" class="hidden">
+      <table class="data-table">
+        <thead><tr><th>Status</th><th>Jumlah Pegawai</th><th>Persentase</th></tr></thead>
+        <tbody>
+          <tr><td><span class="legend-swatch" style="background:#0ca30c; display:inline-block; margin-right:8px;"></span>Sudah Melaksanakan Block Leave</td><td class="num">17.000</td><td class="num">63%</td></tr>
+          <tr><td><span class="legend-swatch" style="background:#d03b3b; display:inline-block; margin-right:8px;"></span>Belum Melaksanakan Block Leave</td><td class="num">10.000</td><td class="num">37%</td></tr>
+          <tr><td><b>Total</b></td><td class="num"><b>27.000</b></td><td class="num"><b>100%</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="legend-row">
+      <div class="legend-item"><span class="legend-swatch" style="background:#0ca30c;"></span>Sudah Melaksanakan</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:#d03b3b;"></span>Belum Melaksanakan</div>
+    </div>
+  </section>
+
+  <!-- KETENTUAN CUTI -->
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Ketentuan Cuti Pegawai</h2>
+        <div class="panel-sub">Ringkasan jenis &amp; ketentuan pokok yang berlaku bagi seluruh pegawai</div>
+      </div>
+    </div>
+    <div class="rule-list">
+      <div class="rule-row">
+        <div class="rule-icon" style="background:var(--ice); color:var(--navy);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="rule-title-col"><div class="rule-title">Cuti Tahunan</div></div>
+        <div class="rule-body"><div class="rule-desc">12 hari kerja per tahun setelah masa kerja 12 bulan berturut-turut; dapat diajukan bertahap dengan persetujuan atasan langsung minimal H-3.</div></div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-icon" style="background:var(--good-bg); color:var(--good);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="rule-title-col"><div class="rule-title">Cuti Besar (Block Leave)</div></div>
+        <div class="rule-body"><div class="rule-desc">Wajib diambil berturut-turut minimal 5 hari kerja dalam satu tahun tanpa akses sistem kerja, sebagai bagian pengendalian risiko internal.</div></div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-icon" style="background:var(--critical-bg); color:var(--critical);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div class="rule-title-col"><div class="rule-title">Cuti Sakit</div></div>
+        <div class="rule-body"><div class="rule-desc">Diberikan berdasarkan surat keterangan dokter; ketentuan pembayaran upah bertahap sesuai peraturan ketenagakerjaan yang berlaku.</div></div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-icon" style="background:#efe9fb; color:#4a3aa7;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+        </div>
+        <div class="rule-title-col"><div class="rule-title">Cuti Melahirkan &amp; Alasan Penting</div></div>
+        <div class="rule-body"><div class="rule-desc">3 bulan cuti melahirkan (1,5 bulan sebelum &amp; sesudah); cuti alasan penting (menikah, dukacita, dll) sesuai ketentuan perusahaan.</div></div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-icon" style="background:#eef0f3; color:#5b6472;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        </div>
+        <div class="rule-title-col"><div class="rule-title">Cuti di Luar Tanggungan</div></div>
+        <div class="rule-body"><div class="rule-desc">Untuk keperluan khusus di luar hak cuti reguler, diajukan dan disetujui oleh pejabat berwenang sesuai kebutuhan.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RISIKO -->
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Analisis Risiko atas Gap Pelaksanaan</h2>
+        <div class="panel-sub">Implikasi dari 10.000 pegawai (37%) yang belum menyelesaikan block leave</div>
+      </div>
+    </div>
+    <div class="card-grid">
+      <div class="info-card">
+        <div class="ic-icon" style="background:var(--critical-bg); color:var(--critical);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h3>Kepatuhan Pengendalian Internal</h3>
+        <p>Berpotensi menjadi temuan audit/kepatuhan karena kewajiban block leave belum terpenuhi secara menyeluruh.</p>
+      </div>
+      <div class="info-card">
+        <div class="ic-icon" style="background:#fdeadb; color:#c9682c;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h3>Kelelahan Kerja Pegawai</h3>
+        <p>Penundaan cuti yang berkepanjangan meningkatkan risiko burnout dan dapat menurunkan produktivitas kerja.</p>
+      </div>
+      <div class="info-card">
+        <div class="ic-icon" style="background:var(--ice); color:var(--navy);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V21H3V8"/><path d="M1 3h22v5H1z"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        </div>
+        <h3>Penumpukan di Akhir Tahun</h3>
+        <p>Risiko lonjakan permohonan cuti secara serentak pada kuartal terakhir apabila tidak dikelola secara bertahap.</p>
+      </div>
+      <div class="info-card">
+        <div class="ic-icon" style="background:#efe9fb; color:#4a3aa7;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+        </div>
+        <h3>Nilai Kepatuhan Tata Kelola</h3>
+        <p>Gap yang tidak tertangani dapat memengaruhi skor kepatuhan tata kelola perusahaan secara keseluruhan.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RENCANA TINDAK LANJUT -->
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Rencana Tindak Lanjut</h2>
+        <div class="panel-sub">Langkah strategis mempercepat penyelesaian gap hingga akhir tahun 2026</div>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="tl-card">
+        <div class="tl-num">1</div>
+        <h3>Reminder &amp; Monitoring</h3>
+        <p>Notifikasi otomatis kepada pegawai dan atasan langsung yang belum mengambil block leave.</p>
+      </div>
+      <div class="tl-card">
+        <div class="tl-num" style="background:var(--good);">2</div>
+        <h3>Keterlibatan Pimpinan Unit</h3>
+        <p>Pimpinan unit memantau dan mendorong penyelesaian cuti bagi anggota timnya masing-masing.</p>
+      </div>
+      <div class="tl-card">
+        <div class="tl-num" style="background:var(--critical);">3</div>
+        <h3>Target Penyelesaian</h3>
+        <p>Seluruh pegawai menyelesaikan kewajiban block leave sebelum akhir Kuartal IV 2026.</p>
+      </div>
+      <div class="tl-card">
+        <div class="tl-num" style="background:#4a3aa7;">4</div>
+        <h3>Evaluasi Berkala</h3>
+        <p>Pelaporan progres bulanan kepada manajemen hingga gap realisasi tertutup sepenuhnya.</p>
+      </div>
+    </div>
+    <div class="callout">Target akhir: menutup gap 10.000 pegawai yang belum melaksanakan block leave secara bertahap dan terukur sebelum tutup tahun 2026.</div>
+  </section>
+
+  <footer class="dash-foot">
+    Divisi Human Capital · Human Capital Strategis — Dashboard ini menggunakan data asumsi untuk keperluan simulasi pelaporan manajemen.<br>
+    Diperbarui Agustus 2026.
+  </footer>
+
+</div>
+
+<script>
+  function toggleView(section) {
+    var chart = document.getElementById(section + '-chart');
+    var legend = document.querySelector('.legend-row');
+    var table = document.getElementById(section + '-table');
+    var btn = document.getElementById('toggleRealisasi');
+    var showingTable = !table.classList.contains('hidden');
+    if (showingTable) {
+      table.classList.add('hidden');
+      chart.classList.remove('hidden');
+      if (legend) legend.classList.remove('hidden');
+      btn.textContent = 'Lihat sebagai tabel';
+    } else {
+      table.classList.remove('hidden');
+      chart.classList.add('hidden');
+      if (legend) legend.classList.add('hidden');
+      btn.textContent = 'Lihat sebagai grafik';
+    }
+  }
+
+  // Tooltip for donut arcs and proportion bar segments
+  var tooltip = document.getElementById('tooltip');
+  var tipTargets = [
+    { el: document.getElementById('arcGood'), text: 'Sudah Melaksanakan: <b>17.000</b> pegawai (63%)' },
+    { el: document.getElementById('arcCritical'), text: 'Belum Melaksanakan: <b>10.000</b> pegawai (37%)' }
+  ];
+  tipTargets.forEach(function (t) {
+    if (!t.el) return;
+    t.el.style.cursor = 'pointer';
+    t.el.addEventListener('mousemove', function (e) {
+      tooltip.innerHTML = t.text;
+      tooltip.style.left = e.clientX + 'px';
+      tooltip.style.top = e.clientY + 'px';
+      tooltip.style.opacity = 1;
+    });
+    t.el.addEventListener('mouseleave', function () { tooltip.style.opacity = 0; });
+  });
+
+  document.querySelectorAll('.prop-seg').forEach(function (seg) {
+    seg.style.cursor = 'pointer';
+    seg.addEventListener('mousemove', function (e) {
+      tooltip.innerHTML = seg.getAttribute('data-tip');
+      tooltip.style.left = e.clientX + 'px';
+      tooltip.style.top = e.clientY + 'px';
+      tooltip.style.opacity = 1;
+    });
+    seg.addEventListener('mouseleave', function () { tooltip.style.opacity = 0; });
+  });
+</script>
+
+</body>
+</html>
